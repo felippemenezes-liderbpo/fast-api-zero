@@ -4,10 +4,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -29,10 +25,6 @@ uv.lock
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
 # Environments
 .env
 .venv
@@ -41,12 +33,3 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
-# Rope project settings
-.ropeproject
-
-# ruff
-.ruff_cache/
-
-# LSP config files
-pyrightconfig.json
