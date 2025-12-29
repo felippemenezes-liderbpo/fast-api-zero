@@ -13,8 +13,8 @@ def read_root():
     return {'message': 'Hello World!'}
 
 
-@app.get('/html', status_code=HTTPStatus.OK, response_class=HTMLResponse)
-def read_html():
+@app.get('/hello', status_code=HTTPStatus.OK, response_class=HTMLResponse)
+def read_hello():
     return """
     <html>
       <head>
