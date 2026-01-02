@@ -8,6 +8,7 @@ dependencies = [
     "beautifulsoup4>=4.14.3",
     "fastapi[standard]>=0.127.1",
     "logfire[fastapi]>=4.16.0",
+    "pydantic[email]>=2.12.5",
 ]
 
 [dependency-groups]
@@ -52,6 +53,13 @@ extend-select = [
     'E',
     'W',
     'PL',
+    'RUF',
+    'T20',
+    'G',
+    'BLE',
+    'PIE',
+    'ERA',
+    'TID',
 ]
 preview = true
 
