@@ -24,14 +24,12 @@ def create_user(user: UserSchema) -> UserDB:
     return user_with_id
 
 
-@app.get('/users/', status_code=HTTPStatus.OK, response_model=UserList)
+@app.get('/users/', response_model=UserList)
 def read_users() -> dict[str, list[UserDB]]:
     return {'users': database}
 
 
-@app.get(
-    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
-)
+@app.get('/users/{user_id}', response_model=UserPublic)
 def read_user(user_id: int):
     if user_id > len(database) or user_id < settings.DATABASE_LOWER_LIMIT:
         raise HTTPException(
@@ -41,9 +39,7 @@ def read_user(user_id: int):
     return database[user_id - 1]
 
 
-@app.put(
-    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
-)
+@app.put('/users/{user_id}', response_model=UserPublic)
 def update_user(user_id: int, user: UserSchema) -> UserDB:
     if user_id > len(database) or user_id < settings.DATABASE_LOWER_LIMIT:
         raise HTTPException(
@@ -56,9 +52,7 @@ def update_user(user_id: int, user: UserSchema) -> UserDB:
     return user_with_id
 
 
-@app.delete(
-    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=Message
-)
+@app.delete('/users/{user_id}', response_model=Message)
 def delete_user(user_id: int):
     if user_id > len(database) or user_id < settings.DATABASE_LOWER_LIMIT:
         raise HTTPException(
