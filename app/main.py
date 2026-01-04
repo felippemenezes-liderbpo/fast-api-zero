@@ -4,8 +4,8 @@ import logfire
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
 
-from app.config import settings
 from app.schemas import Message, UserDB, UserList, UserPublic, UserSchema
+from app.settings import settings
 
 app = FastAPI()
 database: list[UserDB] = []

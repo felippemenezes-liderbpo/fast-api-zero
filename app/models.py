@@ -3,10 +3,10 @@ from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, registry
 
-reg = registry()
+table_registry = registry()
 
 
-@reg.mapped_as_dataclass()
+@table_registry.mapped_as_dataclass()
 class User:
     __tablename__ = 'users'
 
@@ -15,5 +15,5 @@ class User:
     password: Mapped[str] = mapped_column()
     email: Mapped[str] = mapped_column(unique=True)
     created_at: Mapped[datetime] = mapped_column(
-        init=False, default=func.now()
+        init=False, server_default=func.now()
     )
