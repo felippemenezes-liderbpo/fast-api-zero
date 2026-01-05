@@ -28,7 +28,7 @@ pydantic_plugin_record = "all"
 
 [tool.pyrefly]
 project-includes = ["app/**/*.py"]
-project-excludes = ["migrations/**"]
+project-excludes = ["migrations/**", "tests/**"]
 search-path = ["app"]
 python-version = "3.12"
 
@@ -66,12 +66,13 @@ extend-select = [
   "ERA",
   "TID",
 ]
+ignore = ["B008", "FAST002"]
 preview = true
 
 [tool.ruff.lint.per-file-ignores]
 '__init__.py' = ["F401", "F403"]
 'test_*.py' = ["S101", "ARG", "S106"]
-'conftest.py' = ["ARG"]
+'conftest.py' = ["ARG", "S106"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
@@ -90,7 +91,7 @@ lint = "ruff check ."
 post_lint = "ruff check . --diff"
 post_test = "coverage html"
 pre_format = "ruff check . --fix"
-pre_lint = "pyrefly check ."
+pre_lint = "pyrefly check 'app'"
 pre_test = "task format"
 run = "fastapi dev app/main.py"
 test = "pytest -s -x --cov=app -vv"

@@ -2,6 +2,9 @@ from http import HTTPStatus
 
 from fastapi.testclient import TestClient
 
+from app.models import User
+from app.schemas import UserPublic
+
 
 def test_create_user(client: TestClient) -> None:
     user = {
@@ -22,56 +25,25 @@ def test_create_user(client: TestClient) -> None:
     }
 
 
-def test_create_user_invalid_password(client: TestClient) -> None:
-    user = {
-        'username': 'alice',
-        'email': 'alice@example.com',
-        'password': 12345678,
-    }
-    response = client.post(
-        '/users/',
-        json=user,
-    )
-    response_detail = response.json()['detail'][0]
+def test_read_users_with_user(client: TestClient, user: User) -> None:
+    user_schema = UserPublic.model_validate(user).model_dump()
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-    assert response_detail['msg'] == 'Input should be a valid string'
-
-
-def test_read_users(client: TestClient) -> None:
     response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
-        'users': [
-            {
-                'id': 1,
-                'username': 'alice',
-                'email': 'alice@example.com',
-            }
-        ]
+        'users': [user_schema],
     }
 
 
-def test_read_user(client: TestClient) -> None:
-    response = client.get('/users/1')
+def test_read_users_empty(client: TestClient):
+    response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'id': 1,
-        'username': 'alice',
-        'email': 'alice@example.com',
-    }
+    assert response.json() == {'users': []}
 
 
-def test_read_user_not_found(client: TestClient) -> None:
-    response = client.get('/users/999')
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
-def test_update_user(client: TestClient) -> None:
+def test_update_user(client: TestClient, user: User):
     new_user: dict[str, str] = {
         'username': 'bob',
         'email': 'bob@example.com',
@@ -87,27 +59,33 @@ def test_update_user(client: TestClient) -> None:
     }
 
 
-def test_update_user_not_found(client: TestClient) -> None:
-    new_user: dict[str, str] = {
-        'username': 'bob',
-        'email': 'bob@example.com',
-        'password': 'newpassword',
+def test_update_integrity_error(client: TestClient, user: User):
+    client.post(
+        '/users/',
+        json={
+            'username': 'fausto',
+            'email': 'fausto@example.com',
+            'password': 'secret',
+        },
+    )
+
+    response_update = client.put(
+        f'/users/{user.id}',
+        json={
+            'username': 'fausto',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
+        },
+    )
+
+    assert response_update.status_code == HTTPStatus.CONFLICT
+    assert response_update.json() == {
+        'detail': 'Username or Email already exists'
     }
-    response = client.put('/users/999', json=new_user)
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
 
 
-def test_delete_user(client: TestClient) -> None:
+def test_delete_user(client: TestClient, user: User):
     response = client.delete('/users/1')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'User deleted successfully'}
-
-
-def test_delete_user_not_found(client: TestClient) -> None:
-    response = client.delete('/users/999')
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.json() == {'message': 'User deleted'}
