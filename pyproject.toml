@@ -8,9 +8,12 @@ dependencies = [
   "alembic>=1.17.2",
   "fastapi[standard]>=0.127.1",
   "logfire[fastapi]>=4.16.0",
+  "pwdlib[argon2]>=0.3.0",
   "pydantic-settings>=2.12.0",
   "pydantic[email]>=2.12.5",
+  "pyjwt>=2.10.1",
   "sqlalchemy>=2.0.45",
+  "tzdata>=2025.3",
 ]
 
 [dependency-groups]
@@ -71,8 +74,8 @@ preview = true
 
 [tool.ruff.lint.per-file-ignores]
 '__init__.py' = ["F401", "F403"]
-'test_*.py' = ["S101", "ARG", "S106"]
-'conftest.py' = ["ARG", "S106"]
+'test_*.py' = ["S101", "ARG", "S106", "S105"]
+'conftest.py' = ["ARG", "S106", "S105"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [

@@ -107,25 +107,29 @@ def test_read_user_not_found(client: TestClient):
     assert response.json() == {'detail': 'User not found'}
 
 
-def test_update_user(client: TestClient, user: User):
-    new_user: dict[str, str] = {
-        'username': 'bob',
-        'email': 'bob@example.com',
-        'password': 'newpassword',
-    }
-    response = client.put('/users/1', json=new_user)
+def test_update_user(client: TestClient, user: User, token: str):
+    response = client.put(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'newpassword',
+        },
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
-        'id': 1,
-        'username': new_user['username'],
-        'email': new_user['email'],
+        'id': user.id,
+        'username': 'bob',
+        'email': 'bob@example.com',
     }
 
 
-def test_update_integrity_error(client: TestClient, user: User):
+def test_update_integrity_error(client: TestClient, user: User, token: str):
     client.post(
         '/users/',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'fausto',
             'email': 'fausto@example.com',
@@ -135,6 +139,7 @@ def test_update_integrity_error(client: TestClient, user: User):
 
     response_update = client.put(
         f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'fausto',
             'email': 'bob@example.com',
@@ -143,14 +148,12 @@ def test_update_integrity_error(client: TestClient, user: User):
     )
 
     assert response_update.status_code == HTTPStatus.CONFLICT
-    assert response_update.json() == {
-        'detail': 'Username or Email already exists'
-    }
 
 
-def test_update_user_not_found(client: TestClient):
+def test_update_user_insufficient_permissions(client: TestClient, token: str):
     response = client.put(
         '/users/999',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'bob',
             'email': 'bob@example.com',
@@ -158,19 +161,59 @@ def test_update_user_not_found(client: TestClient):
         },
     )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_delete_user(client: TestClient, user: User):
-    response = client.delete('/users/1')
+def test_delete_user(client: TestClient, user: User, token: str):
+
+    response = client.delete(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_delete_user_not_found(client: TestClient):
-    response = client.delete('/users/999')
+def test_delete_user_insufficient_permissions(client: TestClient, token: str):
+    response = client.delete(
+        '/users/999', headers={'Authorization': f'Bearer {token}'}
+    )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_login_incorrect_email(client: TestClient):
+    response = client.post(
+        '/token/',
+        data={'username': 'nonexistent@example.com', 'password': 'password'},
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Incorrect email or password'}
+
+
+def test_login_incorrect_password(client: TestClient, user: User):
+    response = client.post(
+        '/token/',
+        data={'username': user.email, 'password': 'wrongpassword'},
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Incorrect email or password'}
+
+
+def test_get_token(client: TestClient, user: User):
+    response = client.post(
+        '/token/',
+        data={
+            'username': user.email,
+            'password': 'testtest',
+        },
+    )
+    token = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert 'access_token' in token
+    assert 'token_type' in token
