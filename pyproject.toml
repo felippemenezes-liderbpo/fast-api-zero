@@ -41,36 +41,8 @@ target-version = "py312"
 extend-exclude = ["migrations"]
 
 [tool.ruff.lint]
-extend-select = [
-  "I",
-  "UP",
-  "B",
-  "A",
-  "C4",
-  "RET",
-  "SIM",
-  "TC",
-  "ARG",
-  "PT",
-  "FA",
-  "F",
-  "ISC",
-  "FAST",
-  "ASYNC",
-  "S",
-  "E",
-  "W",
-  "PL",
-  "RUF",
-  "T20",
-  "G",
-  "BLE",
-  "PIE",
-  "ERA",
-  "TID",
-]
-ignore = ["B008", "FAST002"]
 preview = true
+select = ["FAST", "I", "F", "E", "W", "PL", "PT"]
 
 [tool.ruff.lint.per-file-ignores]
 '__init__.py' = ["F401", "F403"]

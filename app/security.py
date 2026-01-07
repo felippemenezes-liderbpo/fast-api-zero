@@ -11,13 +11,11 @@ from sqlalchemy.orm import Session
 
 from app.database import get_session
 from app.models import User
+from app.settings import Settings
 
-SECRET_KEY = 'your-secret-key'  # noqa: S105
-ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+settings = Settings()
 pwd_context = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 
 def get_current_user(
@@ -31,7 +29,9 @@ def get_current_user(
     )
 
     try:
-        payload = decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
 
         if not (subject_email := payload.get('sub')):
             raise credentials_exception
@@ -50,10 +50,10 @@ def get_current_user(
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
     to_encode.update({'exp': expire})
-    return encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def get_password_hash(password: str) -> str:

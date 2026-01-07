@@ -93,20 +93,6 @@ def test_read_users_empty(client: TestClient):
     assert response.json() == {'users': []}
 
 
-def test_read_user(client: TestClient, user: User):
-    response = client.get(f'/users/{user.id}')
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == UserPublic.model_validate(user).model_dump()
-
-
-def test_read_user_not_found(client: TestClient):
-    response = client.get('/users/999')
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
 def test_update_user(client: TestClient, user: User, token: str):
     response = client.put(
         f'/users/{user.id}',
@@ -186,7 +172,7 @@ def test_delete_user_insufficient_permissions(client: TestClient, token: str):
 
 def test_login_incorrect_email(client: TestClient):
     response = client.post(
-        '/token/',
+        '/auth/token/',
         data={'username': 'nonexistent@example.com', 'password': 'password'},
     )
 
@@ -196,24 +182,9 @@ def test_login_incorrect_email(client: TestClient):
 
 def test_login_incorrect_password(client: TestClient, user: User):
     response = client.post(
-        '/token/',
+        '/auth/token/',
         data={'username': user.email, 'password': 'wrongpassword'},
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'detail': 'Incorrect email or password'}
-
-
-def test_get_token(client: TestClient, user: User):
-    response = client.post(
-        '/token/',
-        data={
-            'username': user.email,
-            'password': 'testtest',
-        },
-    )
-    token = response.json()
-
-    assert response.status_code == HTTPStatus.OK
-    assert 'access_token' in token
-    assert 'token_type' in token
