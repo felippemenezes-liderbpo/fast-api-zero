@@ -1,3 +1,4 @@
+from sqlalchemy.engine.base import Connection
 import asyncio
 from logging.config import fileConfig
 
@@ -16,7 +17,7 @@ if config.config_file_name is not None:
 
 target_metadata = table_registry.metadata
 
-def do_run_migrations(connection):
+def do_run_migrations(connection: Connection):
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
