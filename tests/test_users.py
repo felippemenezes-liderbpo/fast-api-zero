@@ -93,6 +93,24 @@ def test_read_users_empty(client: TestClient):
     assert response.json() == {'users': []}
 
 
+def test_read_user(client: TestClient, user: User):
+    response = client.get(f'/users/{user.id}')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+    }
+
+
+def test_read_user_not_found(client: TestClient, user: User):
+    response = client.get(f'/users/{user.id + 1}')
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
+
+
 def test_update_user(client: TestClient, user: User, token: str):
     response = client.put(
         f'/users/{user.id}',

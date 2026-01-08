@@ -69,6 +69,16 @@ async def read_users(
     return {'users': users.all()}
 
 
+@router.get('/{user_id}', response_model=UserPublic)
+async def read_user(user_id: int, session: AsyncSessionDep):
+    if not (user := await session.get(User, user_id)):
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+        )
+
+    return user
+
+
 @router.put('/{user_id}', response_model=UserPublic)
 async def update_user(
     user_id: int,
