@@ -158,15 +158,15 @@ def test_update_integrity_error(client: TestClient, user: User, token: str):
 
 
 def test_update_user_insufficient_permissions(
-    client: TestClient, user: User, token: str
+    client: TestClient, other_user: User, token: str
 ):
     response = client.put(
-        f'/users/{user.id + 1}',
+        f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'bob',
             'email': 'bob@example.com',
-            'password': 'newpassword',
+            'password': 'mynewpassword',
         },
     )
 
@@ -184,10 +184,10 @@ def test_delete_user(client: TestClient, user: User, token: str):
 
 
 def test_delete_user_insufficient_permissions(
-    client: TestClient, user: User, token: str
+    client: TestClient, other_user: User, token: str
 ):
     response = client.delete(
-        f'/users/{user.id + 1}', headers={'Authorization': f'Bearer {token}'}
+        f'/users/{other_user.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN

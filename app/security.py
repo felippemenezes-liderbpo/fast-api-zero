@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Depends, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordBearer
-from jwt import DecodeError, decode, encode
+from jwt import DecodeError, ExpiredSignatureError, decode, encode
 from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,9 @@ from app.models import User
 from app.settings import settings
 
 pwd_context = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl='auth/token', refreshUrl='auth/refresh_token'
+)
 
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
 AsyncSessionDep = Annotated[AsyncSession, Depends(get_session)]
@@ -40,6 +42,9 @@ async def get_current_user(
             raise credentials_exception
 
     except DecodeError as exc:
+        raise credentials_exception from exc
+
+    except ExpiredSignatureError as exc:
         raise credentials_exception from exc
 
     if not (

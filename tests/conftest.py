@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from datetime import datetime
 
+import factory
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
@@ -13,6 +14,15 @@ from app.database import get_session
 from app.main import app
 from app.models import User, table_registry
 from app.security import get_password_hash
+
+
+class UserFactory(factory.Factory):
+    class Meta:
+        model = User
+
+    username = factory.Sequence(lambda n: f'test{n}')
+    email = factory.LazyAttribute(lambda obj: f'{obj.username}@test.com')
+    password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
 
 
 @pytest.fixture
@@ -67,17 +77,24 @@ def mock_db_time():
 
 @pytest_asyncio.fixture
 async def user(session: Session) -> User:
-    password = 'testtest'
-    user = User(
-        username='Teste',
-        email='teste@test.com',
-        password=get_password_hash(password),
-    )
+    user = UserFactory(password=get_password_hash('testtest'))
     session.add(user)
     await session.commit()
     await session.refresh(user)
 
-    user.clean_password = password
+    user.clean_password = 'testtest'
+
+    return user
+
+
+@pytest_asyncio.fixture
+async def other_user(session: Session) -> User:
+    user = UserFactory(password=get_password_hash('testtest'))
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    user.clean_password = 'testtest'
 
     return user
 
