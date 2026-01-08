@@ -130,31 +130,38 @@ def test_update_user(client: TestClient, user: User, token: str):
     }
 
 
-def test_update_integrity_error(client: TestClient, user: User, token: str):
-    client.post(
-        '/users/',
-        headers={'Authorization': f'Bearer {token}'},
-        json={
-            'username': 'fausto',
-            'email': 'fausto@example.com',
-            'password': 'secret',
-        },
-    )
-
-    response_update = client.put(
+def test_update_username_conflict(
+    client: TestClient, user: User, other_user: User, token: str
+):
+    response = client.put(
         f'/users/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': 'fausto',
-            'email': f'{user.email}',
-            'password': f'{user.clean_password}',
+            'username': other_user.username,
+            'email': user.email,
+            'password': user.clean_password,
         },
     )
 
-    assert response_update.status_code == HTTPStatus.CONFLICT
-    assert response_update.json() == {
-        'detail': 'Username or Email already exists'
-    }
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Username or Email already exists'}
+
+
+def test_update_email_conflict(
+    client: TestClient, user: User, other_user: User, token: str
+):
+    response = client.put(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': user.username,
+            'email': other_user.email,
+            'password': user.clean_password,
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Username or Email already exists'}
 
 
 def test_update_user_insufficient_permissions(
