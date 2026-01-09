@@ -11,3 +11,8 @@ app.include_router(auth.router)
 
 logfire.configure(token=settings.LOGFIRE_TOKEN)
 logfire.instrument_fastapi(app)
+
+
+@app.get('/', response_model=Message)
+async def root():
+    return {'message': 'Hello World'}
